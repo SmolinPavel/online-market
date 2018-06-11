@@ -24,3 +24,8 @@ database
 /ridesharing-backend
 /ridesharing-frontend
 .env
+.idea
+
+docker
+back
+front
