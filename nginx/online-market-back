@@ -1,0 +1,26 @@
+server {
+        listen       online-market-local.com:80;
+        server_name  online-market-local.com;
+
+        location /api {
+                proxy_pass http://onlinemarket_back:8000;
+                proxy_set_header Host $host;
+        }
+
+        location /ws {
+                proxy_pass http://onlinemarket_back:8000;
+                proxy_set_header Host $host;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "Upgrade";
+        }
+
+        location / {
+                proxy_pass http://onlinemarket_front:3000;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }
+}

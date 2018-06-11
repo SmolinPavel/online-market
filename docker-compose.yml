@@ -1,0 +1,59 @@
+version: '3.2'
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx/online-market:/etc/nginx/conf.d/online-market-back.conf:ro
+    ports:
+      - "80:80"
+    hostname: "online-market-local.com"
+    depends_on:
+      - online_market_back
+      - online_market_front
+    networks:
+      default:
+        aliases:
+          - online-market-local.com
+  database:
+    image: mongo:latest
+    ports:
+      - "${DATABASE_PORT}:${DATABASE_PORT}"
+    volumes:
+      - ./database:/data/db
+  redis:
+    image: redis:3.2-alpine
+    environment:
+      - REDIS_PORT=${REDIS_PORT}
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker/files/redis:/var/lib/redis
+  online_market_back:
+    image: node:9.5-alpine
+    environment:
+      - NODE_PORT=${NODE_PORT}
+      - NODE_ENV=${NODE_ENV_DEV}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_NAME=${DATABASE_NAME}
+    depends_on:
+      - database
+    working_dir: /var/www/back
+    volumes:
+      - ./back/:/var/www/back
+      - /var/www/back/node_modules
+    ports:
+      - "${NODE_PORT}:${NODE_PORT}"
+    command: bash -c "yarn install && yarn start"
+  online_market_front:
+    image: node:9.5-alpine
+    environment:
+      - REACT_APP_PORT=${FRONTEND_PORT}
+      - REACT_APP_NODE_PATH=${NODE_PATH}
+    working_dir: /home/app
+    volumes:
+      - ./front:/home/app
+      - /home/app/node_modules
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    command: bash -c "yarn install && yarn start"
